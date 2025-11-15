@@ -11,6 +11,7 @@ pub struct Recipe {
 /// A single ingredient within a recipe
 #[derive(Debug, Clone)]
 pub struct RecipeIngredient {
+    pub ingredient_id: i64,
     pub ingredient_name: String,
     pub quantity_unit: String,
     pub notes: Option<String>,
@@ -60,11 +61,13 @@ mod tests {
             created_at: "2024-01-15 10:30:00".to_string(),
             ingredients: vec![
                 RecipeIngredient {
+                    ingredient_id: 1,
                     ingredient_name: "flour".to_string(),
                     quantity_unit: "2 cups".to_string(),
                     notes: Some("all-purpose".to_string()),
                 },
                 RecipeIngredient {
+                    ingredient_id: 2,
                     ingredient_name: "sugar".to_string(),
                     quantity_unit: "1 cup".to_string(),
                     notes: None,
@@ -89,6 +92,7 @@ mod tests {
             instructions: None,
             created_at: "2024-01-15 11:00:00".to_string(),
             ingredients: vec![RecipeIngredient {
+                ingredient_id: 1,
                 ingredient_name: "lettuce".to_string(),
                 quantity_unit: "1 head".to_string(),
                 notes: None,
