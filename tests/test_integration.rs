@@ -1,4 +1,4 @@
-use feedme::controllers::{create_recipe, get_recipe};
+use feedme::controllers::{create_ingredient, create_recipe, get_recipe};
 use feedme::models::api::{Recipe, RecipeIngredient};
 use sqlx::sqlite::SqlitePoolOptions;
 
@@ -17,34 +17,62 @@ async fn test_create_and_get_recipe_roundtrip() {
         .await
         .expect("Failed to run migrations");
 
+    // Create ingredients first
+    let flour_id = create_ingredient(&pool, "flour")
+        .await
+        .expect("Failed to create flour");
+
+    let sugar_id = create_ingredient(&pool, "sugar")
+        .await
+        .expect("Failed to create sugar");
+
+    let chocolate_id = create_ingredient(&pool, "chocolate chips")
+        .await
+        .expect("Failed to create chocolate chips");
+
+    let butter_id = create_ingredient(&pool, "butter")
+        .await
+        .expect("Failed to create butter");
+
+    let eggs_id = create_ingredient(&pool, "eggs")
+        .await
+        .expect("Failed to create eggs");
+
     // Create a new recipe
     let new_recipe = Recipe {
         id: 0, // Will be ignored
         name: "Chocolate Chip Cookies".to_string(),
-        instructions: Some("Mix dry ingredients, add wet ingredients, bake at 350°F for 12 minutes".to_string()),
+        instructions: Some(
+            "Mix dry ingredients, add wet ingredients, bake at 350°F for 12 minutes".to_string(),
+        ),
         created_at: String::new(), // Will be ignored
         ingredients: vec![
             RecipeIngredient {
+                ingredient_id: flour_id,
                 ingredient_name: "flour".to_string(),
                 quantity_unit: "2 cups".to_string(),
                 notes: Some("all-purpose".to_string()),
             },
             RecipeIngredient {
+                ingredient_id: sugar_id,
                 ingredient_name: "sugar".to_string(),
                 quantity_unit: "1 cup".to_string(),
                 notes: None,
             },
             RecipeIngredient {
+                ingredient_id: chocolate_id,
                 ingredient_name: "chocolate chips".to_string(),
                 quantity_unit: "2 cups".to_string(),
                 notes: Some("semi-sweet".to_string()),
             },
             RecipeIngredient {
+                ingredient_id: butter_id,
                 ingredient_name: "butter".to_string(),
                 quantity_unit: "1 cup".to_string(),
                 notes: Some("softened".to_string()),
             },
             RecipeIngredient {
+                ingredient_id: eggs_id,
                 ingredient_name: "eggs".to_string(),
                 quantity_unit: "2 whole".to_string(),
                 notes: None,
@@ -71,7 +99,10 @@ async fn test_create_and_get_recipe_roundtrip() {
         fetched_recipe.instructions,
         Some("Mix dry ingredients, add wet ingredients, bake at 350°F for 12 minutes".to_string())
     );
-    assert!(!fetched_recipe.created_at.is_empty(), "created_at should be set");
+    assert!(
+        !fetched_recipe.created_at.is_empty(),
+        "created_at should be set"
+    );
 
     // Verify ingredients
     assert_eq!(fetched_recipe.ingredients.len(), 5);
@@ -122,6 +153,23 @@ async fn test_create_multiple_recipes_with_shared_ingredients() {
         .await
         .expect("Failed to run migrations");
 
+    // Create all ingredients first
+    let flour_id = create_ingredient(&pool, "flour")
+        .await
+        .expect("Failed to create flour");
+
+    let eggs_id = create_ingredient(&pool, "eggs")
+        .await
+        .expect("Failed to create eggs");
+
+    let milk_id = create_ingredient(&pool, "milk")
+        .await
+        .expect("Failed to create milk");
+
+    let butter_id = create_ingredient(&pool, "butter")
+        .await
+        .expect("Failed to create butter");
+
     // Create first recipe with flour and eggs
     let recipe1 = Recipe {
         id: 0,
@@ -130,16 +178,19 @@ async fn test_create_multiple_recipes_with_shared_ingredients() {
         created_at: String::new(),
         ingredients: vec![
             RecipeIngredient {
+                ingredient_id: flour_id,
                 ingredient_name: "flour".to_string(),
                 quantity_unit: "2 cups".to_string(),
                 notes: None,
             },
             RecipeIngredient {
+                ingredient_id: eggs_id,
                 ingredient_name: "eggs".to_string(),
                 quantity_unit: "2 whole".to_string(),
                 notes: None,
             },
             RecipeIngredient {
+                ingredient_id: milk_id,
                 ingredient_name: "milk".to_string(),
                 quantity_unit: "1 cup".to_string(),
                 notes: None,
@@ -159,16 +210,19 @@ async fn test_create_multiple_recipes_with_shared_ingredients() {
         created_at: String::new(),
         ingredients: vec![
             RecipeIngredient {
+                ingredient_id: flour_id,
                 ingredient_name: "flour".to_string(),
                 quantity_unit: "2.5 cups".to_string(),
                 notes: None,
             },
             RecipeIngredient {
+                ingredient_id: eggs_id,
                 ingredient_name: "eggs".to_string(),
                 quantity_unit: "3 whole".to_string(),
                 notes: None,
             },
             RecipeIngredient {
+                ingredient_id: butter_id,
                 ingredient_name: "butter".to_string(),
                 quantity_unit: "0.5 cup".to_string(),
                 notes: Some("melted".to_string()),
